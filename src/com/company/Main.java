@@ -13,13 +13,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
-//876f495e8da8e0958b619778ee8cc3914fe74cd41c80fad11176c4cc05a4e171
 public class Main {
     static int complete = 1;
     public static byte[] getSHA(String input) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         return md.digest(input.getBytes(StandardCharsets.UTF_8));
     }
+    
     public static String toHexString(byte[] hash) {
         BigInteger number = new BigInteger(1, hash);
         StringBuilder hexString = new StringBuilder(number.toString(16));
@@ -28,24 +28,25 @@ public class Main {
         }
         return hexString.toString();
     }
+    
     public static void main(String[] args) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
         AtomicReference<LocalDateTime> now = new AtomicReference<>(LocalDateTime.now());
         System.out.println(dtf.format(now.get()));
-        long MAX = 100000000000L;
-        long MIN = 10000000000L;
+        
+        // sha256 digest for the value 1234567890 10 digit number
+        String hash = "c775e7b757ede630cd0aa1113bd102661ab38829ca52a6422ab782862f268646";
+        // For a n digit decimal number, MAX = 10^n, MIN = 10^(n - 1)
+        long MAX = (long)Math.pow(10, 10);
+        long MIN = (long)Math.pow(10, 9);
         int THREAD_NO = 100;
-        long DISTANCE = MAX/THREAD_NO;
-
-
-        //836438d03e80c2ba6d387089bd6872c9cc75a450cf64b15f40d8a62018db2742
-        //String hash = "876f495e8da8e0958b619778ee8cc3914fe74cd41c80fad11176c4cc05a4e171";
-        String hash = "876f495e8da8e0958b619778ee8cc3914fe74cd41c80fad11176c4cc05a4e171";//test
+        long DISTANCE = MAX/THREAD_NO;         
+        
         ExecutorService exctr = Executors.newFixedThreadPool(THREAD_NO);
-        //callable tasks
+        //List of callable tasks
         List<Callable<String>> cList = new ArrayList<>();
+        
         //populating the callable task list
-
         for (long i = 0; i < THREAD_NO; i++) {
             long finalI = i;
             cList.add(() -> {
@@ -59,9 +60,7 @@ public class Main {
                     if(count < max_) {
                         count++;
                     } else if(flag) {
-                        flag = false;
-                        System.out.println(complete);
-                        complete = complete + 1;
+                        flag = false;                      
                         now.set(LocalDateTime.now());
                         System.out.println(dtf.format(now.get()));
                     }
@@ -70,6 +69,7 @@ public class Main {
                 return ans;
             });
         }
+        
         String ans = "";
         try {
             ans = exctr.invokeAny(cList);
@@ -78,10 +78,8 @@ public class Main {
             exctr.shutdownNow();
             e.printStackTrace();
         }
-        System.out.println(ans + "\n                                    Bingo");
+        System.out.println("                          "+ ans);
         now.set(LocalDateTime.now());
         System.out.println(dtf.format(now.get()));
-
-
     }
 }
