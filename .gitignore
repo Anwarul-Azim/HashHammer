@@ -7,3 +7,6 @@
 # Editor-based HTTP Client requests
 /httpRequests/
 .idea
+out
+SHA256 Iterator.iml
+*.iml
