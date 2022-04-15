@@ -1,79 +1,57 @@
 package src;
 
-import src.hashAlgorithms.HashAlgorithm;
-import src.hashAlgorithms.Sha256;
+
+import src.hashAlgorithms.HashAlgorithms;
+import src.passwordGen.PasswordInfo;
+import src.passwordGen.PasswordTypes;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Hammer {
+    static String margin;
+    static DateTimeFormatter dtf;
+    static AtomicReference<LocalDateTime> now;
 
-    private final String HASHED_PASS;
-    private final int LENGTH;
-    private final PasswordType PASSWORD_TYPE;
-    private final int THREAD_NO;
-
-    public Hammer(String hashedPass, int length, PasswordType passwordType, int threadNo) {
-        this.HASHED_PASS = hashedPass;
-        this.LENGTH = length;
-        this.PASSWORD_TYPE = passwordType;
-        this.THREAD_NO = threadNo;
+    static {
+        dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        now = new AtomicReference<>(LocalDateTime.now());
+        margin = "\n----------------------\n";
     }
 
-    public void start() {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-        AtomicReference<LocalDateTime> now = new AtomicReference<>(LocalDateTime.now());
-        System.out.println(dtf.format(now.get()));
 
-        long lowerLimit = (long) Math.pow(10, LENGTH);
-        long upperLimit = (long) Math.pow(10, LENGTH - 1);
-        long DISTANCE = upperLimit / THREAD_NO;
+    public static void main(String[] args) {
 
-        ExecutorService exctr = Executors.newFixedThreadPool(THREAD_NO);
-        List<Callable<String>> cList = new ArrayList<>();
+        //*****************************************************
 
-        for (long i = 0; i < THREAD_NO; i++) {
-            long finalI = i;
-            cList.add(() -> {
-                long min_ = lowerLimit + (finalI * DISTANCE);
-                long max_ = min_ + DISTANCE;
-                long count = min_;
-                boolean flag = true;
-                //JUST AN ASSIGNMENT
-                String message = String.valueOf(lowerLimit);
-                HashAlgorithm sha256 = new Sha256();
-                while (!sha256.hashFunc(message).equals(HASHED_PASS)) {
-                    if (count < max_) {
-                        count++;
-                    } else if (flag) {
-                        flag = false;
-                        now.set(LocalDateTime.now());
-                        System.out.println(dtf.format(now.get()));
-                    }
-                    message = String.valueOf(count);
-                }
-                return message;
-            });
-        }
+        String hash = "72f3f0ec0aecf5aed1277c3d0b5ad4de4fb631fd7ed216cd1db5b1920cc48342";
+        int length = 6;
+        PasswordTypes type = PasswordTypes.UPPER_CASE_ONLY;
+        HashAlgorithms algo = HashAlgorithms.SHA_256;
+        int threadNo = 100;
 
+        //*****************************************************
+
+        PasswordInfo input = new PasswordInfo(hash, length, type, algo, threadNo);
+        TaskMaker taskMaker = new TaskMaker(input);
+        ExecutorService executor = Executors.newFixedThreadPool(threadNo);
+
+        System.out.print(margin + dtf.format(now.get()) + margin);
         String ans = "";
         try {
-            ans = exctr.invokeAny(cList);
-            exctr.shutdownNow();
+            ans = executor.invokeAny(taskMaker.getTasks());
+            executor.shutdownNow();
         } catch (InterruptedException | ExecutionException e) {
-            exctr.shutdownNow();
+            executor.shutdownNow();
             e.printStackTrace();
         }
-        System.out.println("\n"+ ans);
+        System.out.println(margin + ans);
         now.set(LocalDateTime.now());
-        System.out.println(dtf.format(now.get()));
+        System.out.print(dtf.format(now.get()) + margin);
     }
 }
 

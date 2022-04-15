@@ -2,7 +2,7 @@ package src.hashAlgorithms;
 
 import java.security.NoSuchAlgorithmException;
 
-public interface HashAlgorithm {
+public interface HashAlgorithmInterface {
 
     String hashFunc(String message) throws NoSuchAlgorithmException;
 }

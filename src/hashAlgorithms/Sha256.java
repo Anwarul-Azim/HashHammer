@@ -1,14 +1,12 @@
 package src.hashAlgorithms;
 
-import src.hashAlgorithms.HashAlgorithm;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class Sha256 implements HashAlgorithm {
-
+public class Sha256 implements HashAlgorithmInterface {
 
     private static byte[] getSHA(String input) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
