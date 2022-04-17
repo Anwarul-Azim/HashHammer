@@ -28,9 +28,9 @@ public class Hammer {
 
         //*****************************************************
 
-        String hash = "72f3f0ec0aecf5aed1277c3d0b5ad4de4fb631fd7ed216cd1db5b1920cc48342";
+        String hash = "3c655b2e44f33c8144a23a9fee19ebcp89e1350264ff73965659e606613b2d3e";
         int length = 6;
-        PasswordTypes type = PasswordTypes.UPPER_CASE_ONLY;
+        PasswordTypes type = PasswordTypes.NUMERIC;
         HashAlgorithms algo = HashAlgorithms.SHA_256;
         int threadNo = 100;
 
@@ -40,16 +40,16 @@ public class Hammer {
         TaskMaker taskMaker = new TaskMaker(input);
         ExecutorService executor = Executors.newFixedThreadPool(threadNo);
 
-        System.out.print(margin + dtf.format(now.get()) + margin);
+        System.out.print(margin + "Hash: " + hash + "\nPassword Length: "+ length +"\n" +dtf.format(now.get()) + margin);
         String ans = "";
         try {
             ans = executor.invokeAny(taskMaker.getTasks());
+            System.out.println("Password : " +  ans);
             executor.shutdownNow();
         } catch (InterruptedException | ExecutionException e) {
             executor.shutdownNow();
-            e.printStackTrace();
+            System.out.println("No message found from the given hash within the range.\nCheck if the \"password length\"/ \"hash string\" is correct.");
         }
-        System.out.println(margin + ans);
         now.set(LocalDateTime.now());
         System.out.print(dtf.format(now.get()) + margin);
     }

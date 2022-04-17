@@ -3,48 +3,55 @@ package src.passwordGen;
 import java.util.function.Function;
 
 public class PasswordMaker {
-    private int charSpaceSize;
-    private int startingVal;
-    private long minPassVal;
-    private long maxPassVal;
+    private final int CHAR_SPACE_SIZE;
+    private final int STARTING_CHAR_VAL;
+    private final long MIN_PASS_NUMERIC_VAL;
+    private final long MAX_PASS_NUMERIC_VAL;
+    private final Function<Long, String> PASS_GENERATOR;
 
     public PasswordMaker(char floor, char ceil, int length) {
-        this.charSpaceSize = ceil - floor + 1;
-        this.startingVal = floor - 1;
-        this.minPassVal = symbolToNumber((floor + "").repeat(length));
-        this.maxPassVal = symbolToNumber((ceil + "").repeat(length));
-    }
+        this.CHAR_SPACE_SIZE = ceil - floor + 1;
+        this.STARTING_CHAR_VAL = floor - 1;
+        this.MIN_PASS_NUMERIC_VAL = passToNumericVal((floor + "").repeat(length));
+        this.MAX_PASS_NUMERIC_VAL = passToNumericVal((ceil + "").repeat(length));
+        this.PASS_GENERATOR = (Long n) -> {
+            long number = n;
+            String answer = "";
 
-    public Function<Long, String> makePassword = (Long n) -> {
-        long number = n;
-        String answer = "";
-
-        while (number > 0) {
-            long pos = (number % charSpaceSize);
-            if (pos == 0) {
-                pos = charSpaceSize;
-                number--;
+            while (number > 0) {
+                long pos = (number % CHAR_SPACE_SIZE);
+                if (pos == 0) {
+                    pos = CHAR_SPACE_SIZE;
+                    number--;
+                }
+                answer = (char) (pos + STARTING_CHAR_VAL - 1) + answer;
+                number = number / CHAR_SPACE_SIZE;
             }
-            answer = (char) (pos + startingVal - 1) + answer;
-            number = number / charSpaceSize;
-        }
-        return answer;
-    };
-
-    private long symbolToNumber(String columnTitle) {
-        double output = 0;
-        long pos = 0;
-        for (int i = columnTitle.length() - 1; i >= 0; i--) {
-            output = output + ((long)columnTitle.charAt(i) - startingVal) * Math.pow(charSpaceSize,pos);
-            pos++;
-        }
-        return (long)output;
+            return answer;
+        };
     }
 
-    public long getMaxPassVal() {
-        return maxPassVal;
+    public long getMaxPassNumericVal() {
+        return MAX_PASS_NUMERIC_VAL;
     }
-    public long getMinPassVal() {
-        return minPassVal;
+
+    public long getMinPassNumericVal() {
+        return MIN_PASS_NUMERIC_VAL;
     }
+
+    public Function<Long, String> getPassGenerator() {
+        return this.PASS_GENERATOR;
+    }
+
+
+    private long passToNumericVal(String password) {
+        double val = 0;
+        long charPosition = 0;
+        for (int i = password.length() - 1; i >= 0; i--) {
+            val = val + ((long) password.charAt(i) - STARTING_CHAR_VAL) * Math.pow(CHAR_SPACE_SIZE, charPosition);
+            charPosition++;
+        }
+        return (long) val;
+    }
+
 }
